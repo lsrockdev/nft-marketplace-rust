@@ -55,7 +55,7 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Version {} => {
             // let seconds = env.block.time;
-            to_binary(&"1.4".to_string())
+            to_binary(&"1.8".to_string())
         }
 
         QueryMsg::GetOrder { token_id, nft_address } => {
@@ -372,7 +372,7 @@ fn _update_order(
     let mut order = ORDERS.load(deps.storage, (&token_id, &nft_address))?;
     if order.expire_at < env.block.time.seconds() {
         return Err(ContractError::Expired {});
-    } 
+    }
     if price.amount <= Uint128::zero() {
         return Err(ContractError::InvalidPrice {});
     }
@@ -493,7 +493,7 @@ fn _accept_bid(
     let bid = BIDS.load(deps.storage, (&token_id, &nft_address))?;
 
     // price validation - native sent balance check
-    price.assert_sent_native_token_balance(&info)?;
+    // price.assert_sent_native_token_balance(&info)?;
 
     if bid.price.info != price.info || bid.price.amount != price.amount {
         return Err(ContractError::InvalidPrice {});
@@ -511,19 +511,19 @@ fn _accept_bid(
     };
     messages.push(seller_amount_asset.into_msg(&deps.querier, order.seller.clone())?);
 
-    // send nft to bidder
+    //  send asset back to bidder
     messages.push(CosmosMsg::Wasm(WasmMsg::Execute {
         contract_addr: order.nft_address.to_string(),
         msg: to_binary(&Cw721ExecuteMsg::TransferNft {
-          recipient: bid.bidder.to_string(), 
-          token_id: order.token_id.clone()
+            recipient: bid.bidder.to_string(), 
+            token_id: order.token_id.clone()
         })?,
         funds: vec![]
-      })
+        })
     );
-    // remove bids and orders
-    BIDS.remove(deps.storage, (&token_id, &nft_address));
+    //remove order
     ORDERS.remove(deps.storage, (&token_id, &nft_address));
+    BIDS.remove(deps.storage, (&token_id, &nft_address));
     Ok(Response::new()
         .add_messages(messages)
         .add_attribute("action", "accept_order")
@@ -563,7 +563,6 @@ mod tests {
             };
             let res = instantiate(deps.as_mut(), mock_env(), mock_info(&"signer".to_string(), &[]), instantiate_msg).unwrap();
             assert_eq!(0, res.messages.len());
-
         }
     }
 

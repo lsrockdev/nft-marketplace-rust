@@ -1,9 +1,9 @@
 {
   "testnet": {
     "nftmx_marketplace": {
-      "codeId": "67998",
+      "codeId": "71209",
       "contractAddresses": {
-        "default": "terra1echm6umhd9zsdcnvmdgf067rpeyhe4gru4khxq"
+        "default": "terra13k9lqh95afvdw6snrw2vx8kn6n75c4dgrycp83"
       }
     }
   }
